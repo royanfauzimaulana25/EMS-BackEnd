@@ -1,8 +1,10 @@
-from fastapi import FastAPI, File, Form, UploadFile
+from fastapi import FastAPI, File, Form, UploadFile, Body
 import Utils as utils
 from pydantic import BaseModel
 from typing import Annotated
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+# from weasyprint import HTML
 # import Test as test 
 
 app = FastAPI()
@@ -16,10 +18,6 @@ app.add_middleware(
 )
 
 # Auth
-class User(BaseModel):
-    username: str
-    password: str
-
 
 @app.post("/register")
 async def registration(
@@ -31,23 +29,17 @@ async def registration(
 
     return response
     
-@app.get("/login/")
-async def login(username:str, password:str) :
+@app.post("/login")
+async def login(
+    username : str = Form(...),
+    password : str = Form(...)
+    ) :
+    
     response = utils.login_verification(username, password)    
 
     return response
 
-# Registration
-class photography_info(BaseModel):
-    jenjang_sekolah: str
-    asal_sekolah: str
-    surat_tugas : object
-    no_telepon : str
-    nama_lengkap : str
-    jenis_kelamin : str
-    alamat : str
-    pas_photo : object
-    kartu_pelajar : object
+# Registration ===================================================================
 
 ## Photography
 @app.post("/photography/")
@@ -131,7 +123,7 @@ async def add_basketball(
     ) :
     
     info = {        
-        "id_user": id_user, 
+        "uuid": id_user, 
         "id_lomba" : "150",
         "npsn" : asal_sekolah,
         "surat_tugas" : surat_tugas,
@@ -178,10 +170,50 @@ async def add_basketball(
 
     return response
 
+# Payment
+class Info(BaseModel):
+  id_bayar: str
+  uuid: str
+  metode_pembayaran: str
+  jumlah_bayar: int
+
+@app.post("/pay/")
+async def pay(info : Info = Body(...)) :
+    info =  {"id_bayar": info.id_bayar, 
+             "uuid": info.uuid,   
+             "metode_pembayaran": info.metode_pembayaran, 
+             "jumlah_bayar": info.jumlah_bayar
+             }
+    response = utils.payBill(info)
+    
+    return response
+
 # Get Data
 @app.get("/basketball/")
 async def get_basketball(id_user) :
     
     response = utils.get_basketball_data(id_user)
+
+    return response
+
+# Metadata
+@app.get("/jenjang/")
+async def get_jenjang() :
+    
+    response = utils.get_jenjang_data()
+
+    return response
+
+@app.get("/sekolah/")
+async def get_sekolah(id) :
+    
+    response = utils.get_sekolah_data(id)
+
+    return response
+
+@app.get("/lomba/")
+async def get_lomba(id) :
+    
+    response = utils.get_lomba_data(id)
 
     return response

@@ -46,9 +46,13 @@ def login_verification(username , password):
         user = data[1][0]['username']
         pw = data[1][0]['password']
         id_user = data[1][0]['uuid']
+        role = data[1][0]['role']
 
         if username == user and password == pw :
-            return {'status': "success", 'details': '-', 'data':id_user}
+            if role == 'Peserta':
+                return {'status': "success", 'details': 'User verification success. Mengalihkan halaman....', 'data':[id_user, user], 'redirect': '../registration/competition-option.html'}
+            else :
+                pass
         else :
             return {'status': "error", 'details': 'Email / Password salah'}
         
@@ -139,20 +143,20 @@ def basketball(information) :
     try : 
         for name in url_data.keys():
             data = information[name].file.read()
-            if name == 'surat_tugas':
+            if name[0:11] == 'surat_tugas':
                 file_name = f"{id}-{name}.pdf" 
                 supabase.storage.from_(f'registration-storage/{name}').upload(file=data, path=file_name, file_options={"content-type" : "application/pdf"})
-                public_url = supabase.storage.from_(f'registration-storage/{name}').get_public_url(file_name)
+                public_url = supabase.storage.from_(f'registration-storage/surat_tugas').get_public_url(file_name)
                 url_data[name] = public_url
-            elif name == 'pas_photo': 
+            elif name[0:9] == 'pas_photo': 
                 file_name = f"{id}-{name}.jpg"
                 supabase.storage.from_(f'registration-storage/pas_photo').upload(file=data, path=file_name, file_options={"content-type" : "image/jpg"})
-                public_url = supabase.storage.from_(f'registration-storage/{name}').get_public_url(file_name)
+                public_url = supabase.storage.from_(f'registration-storage/pas_photo').get_public_url(file_name)
                 url_data[name] = public_url
-            elif name == 'kartu_pelajar':
+            elif name[0:13] == 'kartu_pelajar':
                 file_name = f"{id}-{name}.jpg"
                 supabase.storage.from_(f'registration-storage/kartu_pelajar').upload(file=data, path=file_name, file_options={"content-type" : "image/jpg"})
-                public_url = supabase.storage.from_(f'registration-storage/{name}').get_public_url(file_name)
+                public_url = supabase.storage.from_(f'registration-storage/kartu_pelajar').get_public_url(file_name)
                 url_data[name] = public_url
 
 
@@ -184,6 +188,7 @@ def basketball(information) :
              "nama_tim": information["nama_tim"], 
              "nama_pelatih": information["nama_tim"], 
              "nama_official": information["nama_official"], 
+             "kategori_tim": information["kategori_tim"], 
              }
              ).execute()   
              
@@ -324,6 +329,7 @@ def get_basketball_data(id_user):
                 sekolah.nama_sekolah as nama_sekolah,
                 tim.nama_pelatih as pelatih,
                 tim.nama_official as official,
+                tim.kategori_tim as kategori_tim,
                 pendaftaran.no_telp as no_telp
             FROM 
                 pendaftaran, 
@@ -396,8 +402,92 @@ def get_basketball_data(id_user):
                         'nama_sekolah' : result_general[0][3],
                         'nama_pelatih' : result_general[0][4],
                         'nama_official' : result_general[0][5],
-                        'no_telp' : result_general[0][6]
+                        'kategori_tim' : result_general[0][6],
+                        'no_telp' : result_general[0][7]
                     },
                     'member' : wraper
                         }
+                }
+
+# Payments 
+
+
+def payBill(information):
+    try :
+        data, count = supabase.table('detail_akun').select('id_pendaftaran').eq('uuid', information['uuid']).execute()
+
+        data, count = supabase.table('pembayaran').insert(
+            {"id_bayar": information["id_bayar"], 
+             "id_pendaftaran": data[1][0]["id_pendaftaran"],   
+             "metode_pembayaran": information["metode_pembayaran"], 
+             "jumlah_bayar": information["jumlah_bayar"], 
+             "date_created": str(datetime.now())
+             }
+             ).execute()
+    except Exception as Error:
+        print(Error)
+        return {'status': "error-on-add", 'details': Error}
+    
+    else :
+        return {'status': "success", 'details': 'berhasil mencatat pembayaran'}
+
+# Metadata
+def get_jenjang_data():
+    try :
+        data, count = supabase.table('jenjang_sekolah').select('*').execute()
+
+    except Exception as Error:
+        error = Error.json()['details']
+        return {'status': "error", 'details': error}
+
+    else :
+        data = data[1]
+        return {'status': "success", 
+                'details': '-', 
+                'data' : data
+                }
+    
+def get_sekolah_data(id):
+    try :
+        data, count = supabase.table('sekolah').select('*').eq('id_jenjang', id).execute()
+
+    except Exception as Error:
+        error = Error.json()['details']
+        return {'status': "error", 'details': error}
+
+    else :
+        data = data[1]
+        return {'status': "success", 
+                'details': '-', 
+                'data' : data
+                }
+    
+def get_lomba_data(id):
+    try :
+        query = text(f'''
+            SELECT 
+                lomba.nama_lomba as nama_lomba,
+                lomba.biaya_registrasi as biaya
+            FROM
+                detail_akun, pendaftaran, lomba
+            WHERE
+                detail_akun.uuid = '{id}'
+                AND
+                detail_akun.id_pendaftaran = pendaftaran.id_pendaftaran
+                AND
+                pendaftaran.id_lomba = lomba.id_lomba
+        ''')
+
+        # Execute the query with parameters
+        with engine.connect() as conn:
+            result = conn.execute(query)
+        result = result.fetchall()
+
+    except Exception as Error:
+        return {'status': "error", 'details': Error}
+
+    else :
+        return {'status': "success", 
+                'details': '-', 
+                'data' : {'nama' : result[0][0], 'price':result[0][1]}
                 }

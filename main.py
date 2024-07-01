@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from typing import Annotated
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
-import uvicron
+import uvicorn
 # from weasyprint import HTML
 # import Test as test 
 

@@ -4,15 +4,18 @@ from datetime import datetime
 import uuid
 from sqlalchemy import create_engine, text
 import time
-
+import os
 
 # Connect Supabse via SQLAlchemy
-URL = "postgresql://postgres.mbqjqbrviyhkgsgkvevx:#Ems.25qweerty#@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres"
+# URL = "postgresql://postgres.mbqjqbrviyhkgsgkvevx:#Ems.25qweerty#@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres"
+URL = os.environ.get('sql_alchemy_supabase_url')
 engine = create_engine(URL, connect_args={"connect_timeout": "0"})
 
 # Connect Supabase via API
-url : str = "https://mbqjqbrviyhkgsgkvevx.supabase.co"
-key : str = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1icWpxYnJ2aXloa2dzZ2t2ZXZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTg0MjY0MzMsImV4cCI6MjAzNDAwMjQzM30._CAllqdbgfzcQ2N8aUmWVRRXPQZl7z_zkNLpu51wWEc'
+# url : str = "https://mbqjqbrviyhkgsgkvevx.supabase.co"
+# key : str = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1icWpxYnJ2aXloa2dzZ2t2ZXZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTg0MjY0MzMsImV4cCI6MjAzNDAwMjQzM30._CAllqdbgfzcQ2N8aUmWVRRXPQZl7z_zkNLpu51wWEc'
+url : str = os.environ.get('supabase_api_url')
+key : str = os.environ.get('supabase_api_key')
 supabase: Client = create_client(url, key)
 
 # Generate Random ID SHA

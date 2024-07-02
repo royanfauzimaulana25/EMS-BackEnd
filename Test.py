@@ -1,6 +1,6 @@
 # # # # import uuid
 # # # # import random
-# from supabase import create_client, Client
+from supabase import create_client, Client
 # # # # from fastapi import FastAPI, File, Form, UploadFile
 # # # # from PIL import Image
 # # # # import io
@@ -121,9 +121,9 @@
 # from sqlalchemy import create_engine, text
 
 # # # Connect Supabase via API
-# # url : str = "https://mbqjqbrviyhkgsgkvevx.supabase.co"
-# # key : str = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1icWpxYnJ2aXloa2dzZ2t2ZXZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTg0MjY0MzMsImV4cCI6MjAzNDAwMjQzM30._CAllqdbgfzcQ2N8aUmWVRRXPQZl7z_zkNLpu51wWEc'
-# # supabase: Client = create_client(url, key)
+url : str = "https://mbqjqbrviyhkgsgkvevx.supabase.co"
+key : str = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1icWpxYnJ2aXloa2dzZ2t2ZXZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTg0MjY0MzMsImV4cCI6MjAzNDAwMjQzM30._CAllqdbgfzcQ2N8aUmWVRRXPQZl7z_zkNLpu51wWEc'
+supabase: Client = create_client(url, key)
 
 # URL = "postgresql://postgres.mbqjqbrviyhkgsgkvevx:#Ems.25qweerty#@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres"
 # engine = create_engine(URL, connect_args={"connect_timeout": "0"})
@@ -149,14 +149,21 @@
 
 # print(result)
 
-a = 'surat_tugas'
-b = 'pas_photo_1'
-c = 'kartu_pelajar'
+# a = 'surat_tugas'
+# b = 'pas_photo_1'
+# c = 'kartu_pelajar'
 
-print(len(a))
-print(len(b))
-print(len(c))
+# print(len(a))
+# print(len(b))
+# print(len(c))
 
-print('surat_tugas' == a[0:11])
-print('pas_photo' == b[0:9])
-print('kartu_pelajar' == c[0:13])
+# print('surat_tugas' == a[0:11])
+# print('pas_photo' == b[0:9])
+# print('kartu_pelajar' == c[0:13])
+
+data, count = supabase.table('lomba').select('*').execute()
+# print(count[1])
+wraper = []
+for item in data[1]:
+    wraper.append(item)
+print(type(data[1]))

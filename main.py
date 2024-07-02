@@ -197,6 +197,22 @@ async def get_basketball(id_user) :
 
     return response
 
+# Get Number Register Basketball
+@app.get("/basketball/count")
+async def get_basketball_count() :
+    
+    response = utils.get_basketball_count()
+
+    return response
+
+# Get Number Register Photography
+@app.get("/photography/count")
+async def get_basketball_count() :
+    
+    response = utils.get_photography_count()
+
+    return response
+
 # Metadata
 @app.get("/jenjang/")
 async def get_jenjang() :
@@ -216,6 +232,13 @@ async def get_sekolah(id) :
 async def get_lomba(id) :
     
     response = utils.get_lomba_data(id)
+
+    return response
+
+@app.get("/lomba/all")
+async def get_lomba() :
+    
+    response = utils.get_lomba_all_data()
 
     return response
 

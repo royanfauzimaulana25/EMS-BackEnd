@@ -7,13 +7,10 @@ import time
 import os
 
 # Connect Supabse via SQLAlchemy
-# URL = "postgresql://postgres.mbqjqbrviyhkgsgkvevx:#Ems.25qweerty#@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres"
 URL = os.environ.get('sql_alchemy_supabase_url')
 engine = create_engine(URL, connect_args={"connect_timeout": "0"})
 
 # Connect Supabase via API
-# url : str = "https://mbqjqbrviyhkgsgkvevx.supabase.co"
-# key : str = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1icWpxYnJ2aXloa2dzZ2t2ZXZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTg0MjY0MzMsImV4cCI6MjAzNDAwMjQzM30._CAllqdbgfzcQ2N8aUmWVRRXPQZl7z_zkNLpu51wWEc'
 url : str = os.environ.get('supabase_api_url')
 key : str = os.environ.get('supabase_api_key')
 supabase: Client = create_client(url, key)
@@ -54,12 +51,30 @@ def login_verification(username , password):
         if username == user and password == pw :
             if role == 'Peserta':
                 return {'status': "success", 'details': 'User verification success. Mengalihkan halaman....', 'data':[id_user, user], 'redirect': '../registration/competition-option.html'}
+            elif role == 'Administrator' :
+                return {'status': "success", 'details': 'User verification success. Mengalihkan halaman....', 'data':[id_user, user], 'redirect': '../admin/index.html'}
+            elif role == 'Penanggung Jawab' :
+                return {'status': "success", 'details': 'User verification success. Mengalihkan halaman....', 'data':[id_user, user], 'redirect': '../pj/index.html'}
             else :
                 pass
         else :
             return {'status': "error", 'details': 'Email / Password salah'}
         
 # Registration
+## Basketball Count
+def get_photography_count():
+    try:
+       data, count = supabase.table('pendaftaran').select('*', count='exact').eq('id_lomba', '110').execute()
+
+    except Exception as Error:
+        return {'status': "error", 'details': ['error-get',Error]}
+    
+    else :
+        return {'status': "success", 
+                'details': '-', 
+                'data' : count[1]
+                }
+
 
 def photography(information) :  
     id = generate_uuid()
@@ -320,7 +335,20 @@ def get_photography_data(id_user):
                     result[0][7],
                 ]}
     
-## Basketball
+## Basketball Count
+def get_basketball_count():
+    try:
+       data, count = supabase.table('pendaftaran').select('*', count='exact').eq('id_lomba', '150').execute()
+
+    except Exception as Error:
+        return {'status': "error", 'details': ['error-get',Error]}
+    
+    else :
+        return {'status': "success", 
+                'details': '-', 
+                'data' : count[1]
+                }
+
 
 def get_basketball_data(id_user):
     try :
@@ -493,4 +521,18 @@ def get_lomba_data(id):
         return {'status': "success", 
                 'details': '-', 
                 'data' : {'nama' : result[0][0], 'price':result[0][1]}
+                }
+
+
+def get_lomba_all_data():
+    try :
+       data, count = supabase.table('lomba').select('*').execute()
+       
+    except Exception as Error:
+        return {'status': "error", 'details': Error}
+
+    else :
+        return {'status': "success", 
+                'details': '-', 
+                'data' : data[1]
                 }

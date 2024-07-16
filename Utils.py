@@ -8,15 +8,15 @@ import os
 
 # Connect Supabse via SQLAlchemy
 URL = os.environ.get('sql_alchemy_supabase_url')
+
 engine = create_engine(URL, connect_args={"connect_timeout": "0"})
 
 # Connect Supabase via API
 url : str = os.environ.get('supabase_api_url')
 key : str = os.environ.get('supabase_api_key')
-supabase: Client = create_client(url, key)
 
-# Generate Random ID SHA
-# id = str(uuid.uuid5(uuid.NAMESPACE_DNS, 'EMS-Youth' + str(time.time()))) 
+
+supabase: Client = create_client(url, key)
 
 def generate_uuid():
     return str(uuid.uuid4())
@@ -24,7 +24,7 @@ def generate_uuid():
 # Auth
 def add_account(username, password, role):
     try :
-        data, count = supabase.table('akun').insert({"username": username, "password": password, "role": role, "date_created": str(datetime.now())}).execute()
+        data, count = supabase.table('akun').insert({"username": username, "password": password, "role": role, "date_created": str(datetime.now()), "uuid": generate_uuid()}).execute()
 
     except Exception as Error:
         error = Error.json()['details']
@@ -32,6 +32,45 @@ def add_account(username, password, role):
     
     else :
         return {'status': "success", 'details': 'berhasil membuat akun'}
+
+def add_account_pj(username, password, nama, jenis_kelamin, lomba):
+    try :
+        uuid = generate_uuid()
+        data, count = supabase.table('akun').insert({"username": username, "password": password, "role": 'Penanggung Jawab', "date_created": str(datetime.now()), "uuid": uuid}).execute()
+        data, count = supabase.table('penanggung_jawab').insert({"uuid": uuid, "nama": nama, "jenis_kelamin": jenis_kelamin, "id_lomba": lomba}).execute()
+
+
+    except Exception as Error:
+        error = Error.json()['details']
+        return {'status': "error", 'details': error}
+    
+    else :
+        return {'status': "success", 'details': 'berhasil membuat akun penanggung jawab'}
+
+def delete_account_pj(uuid):
+    try :
+        data, count = supabase.table('penanggung_jawab').delete().eq('uuid', uuid).execute()
+        data, count = supabase.table('akun').delete().eq('uuid', uuid).execute()
+
+
+    except Exception as Error:
+        error = Error.json()['details']
+        return {'status': "error", 'details': error}
+    
+    else :
+        return {'status': "success", 'details': 'berhasil menghapus akun penanggung jawab'}
+    
+def update_account_pj(uuid, username, password, nama, jenis_kelamin, lomba):
+    try :
+        data, count = supabase.table('penanggung_jawab').update({"nama": nama, "jenis_kelamin": jenis_kelamin, "id_lomba": lomba}).eq('uuid', uuid).execute()
+        data, count = supabase.table('akun').update({"username": username, "password": password}).eq('uuid', uuid).execute()
+
+    except Exception as Error:
+        error = Error.json()['details']
+        return {'status': "error", 'details': error}
+    
+    else :
+        return {'status': "success", 'details': 'berhasil mengupdate akun penanggung jawab'}
     
 
 def login_verification(username , password):
@@ -54,11 +93,62 @@ def login_verification(username , password):
             elif role == 'Administrator' :
                 return {'status': "success", 'details': 'User verification success. Mengalihkan halaman....', 'data':[id_user, user], 'redirect': '../admin/index.html'}
             elif role == 'Penanggung Jawab' :
-                return {'status': "success", 'details': 'User verification success. Mengalihkan halaman....', 'data':[id_user, user], 'redirect': '../pj/index.html'}
+                pj_data, count = supabase.table('penanggung_jawab').select('*').eq('uuid',id_user).execute()
+
+                print(pj_data[1][0]['id_lomba'])
+                if pj_data[1][0]['id_lomba'] == '150':
+                    return {'status': "success", 'details': 'User verification success. Mengalihkan halaman....', 'data':[id_user, user], 'redirect': '../pj/basketball-pj.html'}
+                else :
+                    return {'status': "success", 'details': 'User verification success. Mengalihkan halaman....', 'data':[id_user, user], 'redirect': '../pj/photography-pj.html'}
             else :
                 pass
         else :
             return {'status': "error", 'details': 'Email / Password salah'}
+
+def get_pj_data ():
+    try :
+        query = text(f'''
+           SELECT 
+                penanggung_jawab.uuid as uuid,
+                akun.username as username,
+                akun.password as password_akun,
+                penanggung_jawab.nama as nama,
+                penanggung_jawab.jenis_kelamin as jenis_kelamin,
+                lomba.nama_lomba as nama_lomba
+            FROM 
+                lomba, penanggung_jawab, akun
+            WHERE 
+                penanggung_jawab.id_lomba = lomba.id_lomba 
+            AND
+                akun.uuid = penanggung_jawab.uuid
+        ''')
+
+        # Execute the query with parameters
+        with engine.connect() as conn:
+            result = conn.execute(query)
+
+        result = result.fetchall()
+
+    except Exception as Error:
+        return {'status': "error", 'details': ['error-get',Error]}
+    
+    else :
+        wraper = []
+        for item in result :
+            temp_dict = {}
+            temp_dict['uuid'] = item[0]
+            temp_dict['username'] = item[1]
+            temp_dict['password'] = item[2]
+            temp_dict['nama'] = item[3]
+            temp_dict['jenis_Kelamin'] = item[4]
+            temp_dict['nama_lomba'] = item[5]
+            wraper.append(temp_dict)
+
+        pass
+        return {'status': "success", 
+                'details': '-', 
+                'data' : wraper
+                }
         
 # Registration
 ## Basketball Count
@@ -335,6 +425,70 @@ def get_photography_data(id_user):
                     result[0][7],
                 ]}
     
+def get_photography_data_all():
+    try :
+        query = text(f'''
+            SELECT 
+            pendaftaran.id_pendaftaran as id_pendaftaran, 
+            DATE(pendaftaran.date_created) as date,
+            jenjang_sekolah.jenjang as jenjang,
+            sekolah.nama_sekolah as nama_sekolah,
+            pendaftaran.no_telp as no_telp,
+            peserta_fotografi.nama as nama_peserta,
+            peserta_fotografi.alamat as alamat_peserta,
+            peserta_fotografi.pas_photo as pas_photo,
+            pendaftaran.surat_tugas as surat_tugas,
+            peserta_fotografi.kartu_pelajar as kartu_pelajar
+            FROM 
+            pendaftaran, 
+            sekolah,
+            jenjang_sekolah,
+            peserta_fotografi,
+            detail_registrasi_individu,
+            detail_akun
+            WHERE
+            detail_akun.id_pendaftaran = pendaftaran.id_pendaftaran 
+            AND
+            detail_registrasi_individu.id_pendaftaran = pendaftaran.id_pendaftaran
+            AND
+            detail_registrasi_individu.id_peserta = peserta_fotografi.id_peserta
+            AND
+            pendaftaran.npsn = sekolah.npsn
+            AND 
+            sekolah.id_jenjang = jenjang_sekolah.id_jenjang
+        ''')
+
+        # Execute the query with parameters
+        with engine.connect() as conn:
+            result = conn.execute(query)
+        result = result.fetchall()
+
+        wraper = []
+        for participant in result :
+            temp_dict = {}
+            temp_dict['id_pendaftaran'] = participant[0]
+            temp_dict['date'] = participant[1]
+            temp_dict['jenjang_sekolah'] = participant[2]
+            temp_dict['nama_sekolah'] = participant[3]
+            temp_dict['no_telp'] = participant[4]
+            temp_dict['nama_peserta'] = participant[5]
+            temp_dict['alamat_peserta'] = participant[6]
+            temp_dict['pas_photo'] = participant[7]
+            temp_dict['surat_tugas'] = participant[8]
+            temp_dict['kartu_pelajar'] = participant[9]
+            wraper.append(temp_dict)
+       
+
+    except Exception as Error:
+        return {'status': "error", 'details': ['error-get',Error]}
+    
+    else :
+        return {'status': "success", 
+                'details': '-', 
+                'data' : 
+                    wraper
+                }
+    
 ## Basketball Count
 def get_basketball_count():
     try:
@@ -351,6 +505,95 @@ def get_basketball_count():
 
 
 def get_basketball_data(id_user):
+    try :
+        query_general = text(f'''
+            SELECT 
+                pendaftaran.id_pendaftaran as id_pendaftaran, 
+                DATE(pendaftaran.date_created) as date,
+                jenjang_sekolah.jenjang as jenjang,
+                sekolah.nama_sekolah as nama_sekolah,
+                tim.nama_pelatih as pelatih,
+                tim.nama_official as official,
+                tim.kategori_tim as kategori_tim,
+                pendaftaran.no_telp as no_telp
+            FROM 
+                pendaftaran, 
+                sekolah,
+                jenjang_sekolah,
+                tim,
+                detail_registrasi_tim,
+                detail_akun
+            WHERE
+                detail_akun.uuid = '{id_user}'
+                AND
+                detail_akun.id_pendaftaran = pendaftaran.id_pendaftaran 
+                AND
+                detail_registrasi_tim.id_pendaftaran = pendaftaran.id_pendaftaran
+                AND
+                pendaftaran.npsn = sekolah.npsn
+                AND 
+                sekolah.id_jenjang = jenjang_sekolah.id_jenjang
+        ''')
+
+        query_member = text(f'''
+           SELECT 
+                peserta_basket.nama as nama, 
+                peserta_basket.no_punggung as no_punggung,
+                peserta_basket.alamat as alamat,
+                peserta_basket.pas_photo as pas_photo,
+                tim.nama_tim as nama_tim
+            FROM 
+                peserta_basket, tim, detail_registrasi_tim, pendaftaran, detail_akun
+            WHERE
+                detail_akun.uuid = '{id_user}'
+                AND
+                detail_akun.id_pendaftaran = pendaftaran.id_pendaftaran 
+                AND
+                detail_registrasi_tim.id_pendaftaran = pendaftaran.id_pendaftaran
+                AND 
+                detail_registrasi_tim.id_tim = tim.id_tim
+                AND
+                peserta_basket.id_tim =  tim.id_tim
+        ''')
+
+        # Execute the query with parameters
+        with engine.connect() as conn:
+            result_general = conn.execute(query_general)
+            result_member = conn.execute(query_member)
+
+        result_general = result_general.fetchall()
+        result_member = result_member.fetchall()
+
+        wraper = []
+        for member in result_member :
+            temp_dict = {}
+            temp_dict['nama_lengkap'] = member[0]
+            temp_dict['no_punggung'] = member[1]
+            temp_dict['alamat'] = member[2]
+            temp_dict['pas_photo'] = member[3]
+            wraper.append(temp_dict)
+
+    except Exception as Error:
+        return {'status': "error", 'details': ['error-get',Error]}
+    
+    else :
+        return {'status': "success", 
+                'details': '-', 
+                'data' : {
+                    'general' : {
+                        'id_pendaftaran' : result_general[0][0],
+                        'date' : result_general[0][1],
+                        'jenjang_sekolah' : result_general[0][2],
+                        'nama_sekolah' : result_general[0][3],
+                        'nama_pelatih' : result_general[0][4],
+                        'nama_official' : result_general[0][5],
+                        'kategori_tim' : result_general[0][6],
+                        'no_telp' : result_general[0][7]
+                    },
+                    'member' : wraper
+                        }
+                }
+def get_basketball_data_all():
     try :
         query_general = text(f'''
             SELECT 
@@ -527,6 +770,19 @@ def get_lomba_data(id):
 def get_lomba_all_data():
     try :
        data, count = supabase.table('lomba').select('*').execute()
+       
+    except Exception as Error:
+        return {'status': "error", 'details': Error}
+
+    else :
+        return {'status': "success", 
+                'details': '-', 
+                'data' : data[1]
+                }
+    
+def update_lomba_data(id_lomba, start_date, end_date):
+    try :
+       data, count =  supabase.table('lomba').update({'start_date':start_date, 'end_date':end_date}).eq("id_lomba", id_lomba).execute()
        
     except Exception as Error:
         return {'status': "error", 'details': Error}

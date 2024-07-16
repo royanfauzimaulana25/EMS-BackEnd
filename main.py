@@ -29,6 +29,19 @@ async def registration(
     response = utils.add_account(username, password, 'Peserta')
 
     return response
+
+@app.post("/register/pj")
+async def registration(
+    username : str = Form(...),
+    password : str = Form(...),
+    nama : str = Form(...),
+    jenis_kelamin : str = Form(...),
+    lomba : str = Form(...)
+    ) :
+
+    response = utils.add_account_pj(username, password, nama, jenis_kelamin, lomba)
+
+    return response
     
 @app.post("/login")
 async def login(
@@ -37,6 +50,37 @@ async def login(
     ) :
     
     response = utils.login_verification(username, password)    
+
+    return response
+
+# Auth Get Data 
+@app.get("/register/pj")
+async def getpj() :
+    
+    response = utils.get_pj_data()    
+
+    return response
+
+# Auth Delete Data 
+@app.delete("/register/pj")
+async def deletepj(uuid) :
+    
+    response = utils.delete_account_pj(uuid)    
+
+    return response
+
+# Auth Update Data 
+@app.put("/register/pj")
+async def updatepj(
+    uuid : str = Form(...),
+    username : str = Form(...),
+    password : str = Form(...),
+    nama : str = Form(...),
+    jenis_kelamin : str = Form(...),
+    lomba : str = Form(...)
+    ) :
+    
+    response = utils.update_account_pj(uuid, username, password, nama, jenis_kelamin, lomba)    
 
     return response
 
@@ -78,6 +122,13 @@ async def add_photography(
 async def get_photography(id_user) :
     
     response = utils.get_photography_data(id_user)
+
+    return response
+
+@app.get("/photography/all")
+async def get_photography_all() :
+    
+    response = utils.get_photography_data_all()
 
     return response
 
@@ -232,6 +283,17 @@ async def get_sekolah(id) :
 async def get_lomba(id) :
     
     response = utils.get_lomba_data(id)
+
+    return response
+
+@app.put("/lomba/")
+async def update_lomba(
+    id_lomba : str = Form(...),
+    date_start : str = Form(...),
+    date_end : str = Form(...)
+    ) :
+    
+    response = utils.update_lomba_data(id_lomba, date_start,date_end)
 
     return response
 

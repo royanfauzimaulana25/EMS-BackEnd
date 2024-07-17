@@ -15,7 +15,6 @@ engine = create_engine(URL, connect_args={"connect_timeout": "0"})
 url : str = os.environ.get('supabase_api_url')
 key : str = os.environ.get('supabase_api_key')
 
-
 supabase: Client = create_client(url, key)
 
 def generate_uuid():
@@ -294,7 +293,7 @@ def basketball(information) :
         data, count = supabase.table('tim').insert(
             {"id_tim": id + "-tim", 
              "nama_tim": information["nama_tim"], 
-             "nama_pelatih": information["nama_tim"], 
+             "nama_pelatih": information["nama_pelatih"], 
              "nama_official": information["nama_official"], 
              "kategori_tim": information["kategori_tim"], 
              }
@@ -601,66 +600,89 @@ def get_basketball_data_all():
                 DATE(pendaftaran.date_created) as date,
                 jenjang_sekolah.jenjang as jenjang,
                 sekolah.nama_sekolah as nama_sekolah,
+                tim.nama_tim as nama_tim,
                 tim.nama_pelatih as pelatih,
                 tim.nama_official as official,
                 tim.kategori_tim as kategori_tim,
+                pendaftaran.surat_tugas as surat_tugas,
                 pendaftaran.no_telp as no_telp
             FROM 
                 pendaftaran, 
                 sekolah,
                 jenjang_sekolah,
                 tim,
-                detail_registrasi_tim,
-                detail_akun
+                detail_registrasi_tim
             WHERE
-                detail_akun.uuid = '{id_user}'
+                    pendaftaran.id_lomba = '150'
                 AND
-                detail_akun.id_pendaftaran = pendaftaran.id_pendaftaran 
+                    detail_registrasi_tim.id_pendaftaran = pendaftaran.id_pendaftaran
                 AND
-                detail_registrasi_tim.id_pendaftaran = pendaftaran.id_pendaftaran
-                AND
-                pendaftaran.npsn = sekolah.npsn
+                    pendaftaran.npsn = sekolah.npsn
                 AND 
-                sekolah.id_jenjang = jenjang_sekolah.id_jenjang
-        ''')
-
-        query_member = text(f'''
-           SELECT 
-                peserta_basket.nama as nama, 
-                peserta_basket.no_punggung as no_punggung,
-                peserta_basket.alamat as alamat,
-                peserta_basket.pas_photo as pas_photo,
-                tim.nama_tim as nama_tim
-            FROM 
-                peserta_basket, tim, detail_registrasi_tim, pendaftaran, detail_akun
-            WHERE
-                detail_akun.uuid = '{id_user}'
-                AND
-                detail_akun.id_pendaftaran = pendaftaran.id_pendaftaran 
-                AND
-                detail_registrasi_tim.id_pendaftaran = pendaftaran.id_pendaftaran
+                    sekolah.id_jenjang = jenjang_sekolah.id_jenjang
                 AND 
-                detail_registrasi_tim.id_tim = tim.id_tim
-                AND
-                peserta_basket.id_tim =  tim.id_tim
+                    tim.id_tim = detail_registrasi_tim.id_tim            
         ''')
 
         # Execute the query with parameters
         with engine.connect() as conn:
             result_general = conn.execute(query_general)
-            result_member = conn.execute(query_member)
 
         result_general = result_general.fetchall()
-        result_member = result_member.fetchall()
 
-        wraper = []
-        for member in result_member :
-            temp_dict = {}
-            temp_dict['nama_lengkap'] = member[0]
-            temp_dict['no_punggung'] = member[1]
-            temp_dict['alamat'] = member[2]
-            temp_dict['pas_photo'] = member[3]
-            wraper.append(temp_dict)
+        data = []
+        for general in result_general:
+            
+            query_member = text(f'''
+                    SELECT 
+                        peserta_basket.nama as nama, 
+                        peserta_basket.no_punggung as no_punggung,
+                        peserta_basket.alamat as alamat,
+                        peserta_basket.pas_photo as pas_photo,
+                        peserta_basket.kartu_pelajar as kartu_pelajar
+                    FROM 
+                        peserta_basket
+                        
+                    INNER JOIN
+                        detail_registrasi_tim
+                    ON  
+                        detail_registrasi_tim.id_tim = peserta_basket.id_tim
+                    AND detail_registrasi_tim.id_pendaftaran = '{general[0]}'
+                ''')
+
+            with engine.connect() as conn:
+                result_member = conn.execute(query_member)
+
+            result_member = result_member.fetchall()
+            
+            member_wraper = []
+            for member in result_member :
+                # print(member[0])
+                temp_dict = {
+                    'nama_lengkap' : member[0],
+                    'no_punggung' : member[1],
+                    'alamat' : member[2],
+                    'pas_photo' : member[3],
+                    'kartu_pelajar' : member[4]
+                }
+                # print(temp_dict)
+                member_wraper.append(temp_dict)
+
+            general = {
+                'id_pendaftaran' : general[0],
+                'date' : general[1],
+                'jenjang' : general[2],
+                'nama_sekolah' : general[3],
+                'nama_tim' : general[4],
+                'pelatih' : general[5],
+                'official' : general[6],
+                'kategori_tim' : general[7],
+                'surat_tugas' : general[8],
+                'no_telp' : general[9],
+                'member': member_wraper
+                }
+
+            data.append(general)
 
     except Exception as Error:
         return {'status': "error", 'details': ['error-get',Error]}
@@ -668,19 +690,7 @@ def get_basketball_data_all():
     else :
         return {'status': "success", 
                 'details': '-', 
-                'data' : {
-                    'general' : {
-                        'id_pendaftaran' : result_general[0][0],
-                        'date' : result_general[0][1],
-                        'jenjang_sekolah' : result_general[0][2],
-                        'nama_sekolah' : result_general[0][3],
-                        'nama_pelatih' : result_general[0][4],
-                        'nama_official' : result_general[0][5],
-                        'kategori_tim' : result_general[0][6],
-                        'no_telp' : result_general[0][7]
-                    },
-                    'member' : wraper
-                        }
+                'data' : data
                 }
 
 # Payments 

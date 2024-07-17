@@ -248,6 +248,13 @@ async def get_basketball(id_user) :
 
     return response
 
+@app.get("/basketball/all")
+async def get_basketball() :
+    
+    response = utils.get_basketball_data_all()
+
+    return response
+
 # Get Number Register Basketball
 @app.get("/basketball/count")
 async def get_basketball_count() :

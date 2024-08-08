@@ -4,9 +4,6 @@ from pydantic import BaseModel
 from typing import Annotated
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
-# import uvicorn
-# from weasyprint import HTML
-# import Test as test 
 
 app = FastAPI()
 
@@ -53,6 +50,7 @@ async def login(
 
     return response
 
+# Penanggung Jawab ==============================================================
 # Auth Get Data 
 @app.get("/register/pj")
 async def getpj() :
@@ -84,12 +82,21 @@ async def updatepj(
 
     return response
 
+# Get PJ Role 
+@app.get("/pj/role")
+async def rolepj(uuid):
+
+    response = utils.get_role(uuid)
+
+    return response
+
 # Registration ===================================================================
 
-## Photography
-@app.post("/photography/")
-async def add_photography(
+## Single Category
+@app.post("/single/")
+async def add_single(
     id_user: Annotated[str, Form()],
+    lomba: Annotated[str, Form()],
     asal_sekolah: Annotated[str, Form()],
     surat_tugas : Annotated[UploadFile, File()],
     no_telepon : Annotated[str, Form()],
@@ -107,118 +114,103 @@ async def add_photography(
         "alamat" : alamat,
         "pas_photo" : pas_photo,
         "kartu_pelajar" : kartu_pelajar,
-        "id_lomba" : "110",
+        "id_lomba" : lomba,
         "npsn" : asal_sekolah,
         "surat_tugas" : surat_tugas,
         "no_telp" : no_telepon
             }
     
-    response = utils.photography(info)
+    response = utils.single(info)
 
     return response
 
 # Get Data
-@app.get("/photography/")
+@app.get("/single/")
 async def get_photography(id_user) :
     
-    response = utils.get_photography_data(id_user)
+    response = utils.get_single_data(id_user)
 
     return response
 
-@app.get("/photography/all")
-async def get_photography_all() :
+@app.get("/single/all")
+async def get_single_all() :
     
-    response = utils.get_photography_data_all()
+    response = utils.get_single_data_all()
 
     return response
 
 
-## Basketball  
-@app.post("/basketball/")
-async def add_basketball(
+## Team Category  
+@app.post("/team/")
+async def add_team(
     id_user: Annotated[str, Form()],
+    lomba: Annotated[str, Form()],
     asal_sekolah: Annotated[str, Form()],
     surat_tugas : Annotated[UploadFile, File()],
     no_telepon : Annotated[str, Form()],
     nama_tim : Annotated[str, Form()],
-    kategori_tim : Annotated[str, Form()],
-    nama_pelatih : Annotated[str, Form()],
-    nama_official : Annotated[str, Form()],
+    nama_pendamping : Annotated[str, Form()],
 
     nama_lengkap : Annotated[str, Form()],
     jenis_kelamin : Annotated[str, Form()],
     alamat : Annotated[str, Form()],
-    no_punggung : Annotated[str, Form()],
     pas_photo : Annotated[UploadFile, File()],
     kartu_pelajar : Annotated[UploadFile, File()],
 
     nama_lengkap_1 : Annotated[str, Form()],
     jenis_kelamin_1 : Annotated[str, Form()],
     alamat_1 : Annotated[str, Form()],
-    no_punggung_1 : Annotated[str, Form()],
     pas_photo_1 : Annotated[UploadFile, File()],
     kartu_pelajar_1 : Annotated[UploadFile, File()],
 
     nama_lengkap_2 : Annotated[str, Form()],
     jenis_kelamin_2 : Annotated[str, Form()],
     alamat_2 : Annotated[str, Form()],
-    no_punggung_2 : Annotated[str, Form()],
     pas_photo_2 : Annotated[UploadFile, File()],
     kartu_pelajar_2 : Annotated[UploadFile, File()],
 
     nama_lengkap_3 : Annotated[str, Form()],
     jenis_kelamin_3 : Annotated[str, Form()],
     alamat_3 : Annotated[str, Form()],
-    no_punggung_3 : Annotated[str, Form()],
     pas_photo_3 : Annotated[UploadFile, File()],
     kartu_pelajar_3 : Annotated[UploadFile, File()]
     ) :
     
     info = {        
         "uuid": id_user, 
-        "id_lomba" : "150",
+        "id_lomba" : lomba,
         "npsn" : asal_sekolah,
         "surat_tugas" : surat_tugas,
         "no_telp" : no_telepon,
         "nama_tim" : nama_tim,
-        "kategori_tim" : kategori_tim,
-        "nama_pelatih" : nama_pelatih,
-        "nama_official" : nama_official,
+        "nama_pendamping" : nama_pendamping,
 
         "nama" : nama_lengkap,
         "jenis_kelamin" : jenis_kelamin,
         "alamat" : alamat,
-        "no_punggung" : no_punggung,
         "pas_photo" : pas_photo,
         "kartu_pelajar" : kartu_pelajar,
-        "is_captain" : True,
 
         "nama_1" : nama_lengkap_1,
         "jenis_kelamin_1" : jenis_kelamin_1,
         "alamat_1" : alamat_1,
-        "no_punggung_1" : no_punggung_1,
         "pas_photo_1" : pas_photo_1,
         "kartu_pelajar_1" : kartu_pelajar_1,
-        "is_captain_1" : False,
 
         "nama_2" : nama_lengkap_2,
         "jenis_kelamin_2" : jenis_kelamin_2,
         "alamat_2" : alamat_2,
-        "no_punggung_2" : no_punggung_2,
         "pas_photo_2" : pas_photo_2,
         "kartu_pelajar_2" : kartu_pelajar_2,
-        "is_captain_2" : False,
 
         "nama_3" : nama_lengkap_3,
         "jenis_kelamin_3" : jenis_kelamin_3,
         "alamat_3" : alamat_3,
-        "no_punggung_3" : no_punggung_3,
         "pas_photo_3" : pas_photo_3,
         "kartu_pelajar_3" : kartu_pelajar_3,
-        "is_captain_3" : False
             }
     
-    response = utils.basketball(info)
+    response = utils.team(info)
 
     return response
 
@@ -241,35 +233,38 @@ async def pay(info : Info = Body(...)) :
     return response
 
 # Get Data
-@app.get("/basketball/")
-async def get_basketball(id_user) :
+@app.get("/team/")
+async def get_tean(id_user) :
     
-    response = utils.get_basketball_data(id_user)
+    response = utils.get_team_data(id_user)
 
     return response
 
-@app.get("/basketball/all")
-async def get_basketball() :
+@app.get("/team/all")
+async def get_team() :
     
-    response = utils.get_basketball_data_all()
+    response = utils.get_team_data_all()
 
     return response
 
 # Get Number Register Basketball
-@app.get("/basketball/count")
-async def get_basketball_count() :
+# @app.get("/basketball/count")
+# async def get_basketball_count() :
     
-    response = utils.get_basketball_count()
+#     response = utils.get_basketball_count()
 
-    return response
+#     return response
 
 # Get Number Register Photography
-@app.get("/photography/count")
-async def get_basketball_count() :
+# @app.get("/photography/count")
+# async def get_basketball_count() :
     
-    response = utils.get_photography_count()
+#     response = utils.get_photography_count()
 
-    return response
+#     return response
+
+# 
+
 
 # Metadata
 @app.get("/jenjang/")
@@ -286,6 +281,22 @@ async def get_sekolah(id) :
 
     return response
 
+@app.post("/lomba/")
+async def add_lomba(
+    id_lomba : Annotated[str, Form()],
+    nama_lomba : Annotated[str, Form()],
+    biaya_registrasi : Annotated[int, Form()],
+    date_start : Annotated[str, Form()],
+    date_end : Annotated[str, Form()],
+    description : Annotated[str, Form()],
+    ilustrasi : Annotated[UploadFile, File()],
+    kategori_lomba : Annotated[str, Form()]
+    ) :
+    
+    response = utils.add_lomba_data(id_lomba, nama_lomba, biaya_registrasi, date_start, date_end, description, ilustrasi, kategori_lomba)
+
+    return response
+
 @app.get("/lomba/")
 async def get_lomba(id) :
     
@@ -295,12 +306,26 @@ async def get_lomba(id) :
 
 @app.put("/lomba/")
 async def update_lomba(
-    id_lomba : str = Form(...),
-    date_start : str = Form(...),
-    date_end : str = Form(...)
+    id_lomba : str = Form(),
+    nama_lomba : str = Form(),
+    biaya_registrasi : str = Form(),
+    date_start : str = Form(),
+    date_end : str = Form(),
+    description : str = Form(),
+    ilustrasi : UploadFile = None,
+    kategori_lomba : str = Form()
     ) :
+    if ilustrasi.size == 0:
+        ilustrasi = None
+
+    response = utils.update_lomba_data(id_lomba, nama_lomba, biaya_registrasi, date_start, date_end, description, ilustrasi, kategori_lomba)
+
+    return response
+
+@app.delete("/lomba/")
+async def delete_lomba(id_lomba) :
     
-    response = utils.update_lomba_data(id_lomba, date_start,date_end)
+    response = utils.delete_lomba(id_lomba)
 
     return response
 
@@ -308,6 +333,13 @@ async def update_lomba(
 async def get_lomba() :
     
     response = utils.get_lomba_all_data()
+
+    return response
+
+@app.get("/lomba/count")
+async def get_count_lomba() :
+
+    response = utils.get_count_lomba()
 
     return response
 

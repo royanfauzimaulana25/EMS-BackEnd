@@ -70,7 +70,18 @@ def update_account_pj(uuid, username, password, nama, jenis_kelamin, lomba):
     
     else :
         return {'status': "success", 'details': 'berhasil mengupdate akun penanggung jawab'}
+
+def get_role(uuid):
+    try :
+        data, count = supabase.table('penanggung_jawab').select("id_lomba").eq('uuid', uuid).execute()
     
+    except Exception as Error:
+        error = Error.json()['details']
+        return {'status': "error", 'details': error}
+    
+    else :
+        return {'status': "success", 'details': '-', 'data' : data[1]}
+        
 
 def login_verification(username , password):
     try :
@@ -93,12 +104,12 @@ def login_verification(username , password):
                 return {'status': "success", 'details': 'User verification success. Mengalihkan halaman....', 'data':[id_user, user], 'redirect': '../admin/index.html'}
             elif role == 'Penanggung Jawab' :
                 pj_data, count = supabase.table('penanggung_jawab').select('*').eq('uuid',id_user).execute()
+                lomba_data, count = supabase.table('lomba').select('kategori_lomba').eq('id_lomba ',pj_data[1][0]['id_lomba']).execute()
 
-                print(pj_data[1][0]['id_lomba'])
-                if pj_data[1][0]['id_lomba'] == '150':
-                    return {'status': "success", 'details': 'User verification success. Mengalihkan halaman....', 'data':[id_user, user], 'redirect': '../pj/basketball-pj.html'}
+                if lomba_data[1][0]['kategori_lomba'] == 'team':
+                    return {'status': "success", 'details': 'User verification success. Mengalihkan halaman....', 'data':[id_user, user], 'redirect': '../pj/team-pj.html'}
                 else :
-                    return {'status': "success", 'details': 'User verification success. Mengalihkan halaman....', 'data':[id_user, user], 'redirect': '../pj/photography-pj.html'}
+                    return {'status': "success", 'details': 'User verification success. Mengalihkan halaman....', 'data':[id_user, user], 'redirect': '../pj/single-pj.html'}
             else :
                 pass
         else :
@@ -165,7 +176,7 @@ def get_photography_count():
                 }
 
 
-def photography(information) :  
+def single(information) :  
     id = generate_uuid()
 
     # Upload File to storage
@@ -207,7 +218,7 @@ def photography(information) :
              }
              ).execute()
         
-        data, count = supabase.table('peserta_fotografi').insert(
+        data, count = supabase.table('single_member').insert(
             {"id_peserta": id + "-peserta", 
              "nama": information["nama"], 
              "jenis_kelamin": information["jenis_kelamin"], 
@@ -230,7 +241,7 @@ def photography(information) :
     else :
         return {'status': "success", 'details': 'berhasil mendaftarkan peserta' , 'id' : id}
 
-def basketball(information) :  
+def team(information) :  
     id = generate_uuid()
 
     # Upload File to storage
@@ -293,9 +304,7 @@ def basketball(information) :
         data, count = supabase.table('tim').insert(
             {"id_tim": id + "-tim", 
              "nama_tim": information["nama_tim"], 
-             "nama_pelatih": information["nama_pelatih"], 
-             "nama_official": information["nama_official"], 
-             "kategori_tim": information["kategori_tim"], 
+             "nama_pendamping": information["nama_pendamping"]
              }
              ).execute()   
              
@@ -305,55 +314,47 @@ def basketball(information) :
              }
              ).execute()
                 
-        data, count = supabase.table('peserta_basket').insert(
+        data, count = supabase.table('team_member').insert(
             {"id_peserta": id + "-peserta",
              "id_tim": id + "-tim",  
              "nama": information["nama"], 
              "jenis_kelamin": information["jenis_kelamin"], 
              "alamat": information["alamat"],
-             "no_punggung": information["no_punggung"],
              "pas_photo": url_data["pas_photo"],
-             "kartu_pelajar": url_data["kartu_pelajar"],
-             "is_captain": information["is_captain"]
+             "kartu_pelajar": url_data["kartu_pelajar"]
              }
              ).execute()
                 
-        data, count = supabase.table('peserta_basket').insert(
+        data, count = supabase.table('team_member').insert(
             {"id_peserta": id + "-peserta_1",
+             "id_tim": id + "-tim",
              "nama": information["nama_1"], 
              "jenis_kelamin": information["jenis_kelamin_1"], 
              "alamat": information["alamat_1"],
-             "no_punggung": information["no_punggung_1"],
              "pas_photo": url_data["pas_photo_1"],
-             "kartu_pelajar": url_data["kartu_pelajar_1"],
-             "id_tim": id + "-tim",  
-             "is_captain": information["is_captain_1"]
+             "kartu_pelajar": url_data["kartu_pelajar_1"]
              }
              ).execute()
                 
-        data, count = supabase.table('peserta_basket').insert(
+        data, count = supabase.table('team_member').insert(
             {"id_peserta": id + "-peserta_2",
              "id_tim": id + "-tim",  
              "nama": information["nama_2"], 
              "jenis_kelamin": information["jenis_kelamin_2"], 
              "alamat": information["alamat_2"],
-             "no_punggung": information["no_punggung_2"],
              "pas_photo": url_data["pas_photo_2"],
-             "kartu_pelajar": url_data["kartu_pelajar_2"],
-             "is_captain": information["is_captain_2"]
+             "kartu_pelajar": url_data["kartu_pelajar_2"]
              }
              ).execute()
                 
-        data, count = supabase.table('peserta_basket').insert(
+        data, count = supabase.table('team_member').insert(
             {"id_peserta": id + "-peserta_3",
              "id_tim": id + "-tim",  
              "nama": information["nama_3"], 
              "jenis_kelamin": information["jenis_kelamin_3"], 
              "alamat": information["alamat_3"],
-             "no_punggung": information["no_punggung_3"],
              "pas_photo": url_data["pas_photo_3"],
-             "kartu_pelajar": url_data["kartu_pelajar_3"],
-             "is_captain": information["is_captain_3"]
+             "kartu_pelajar": url_data["kartu_pelajar_3"]
              }
              ).execute()
         
@@ -368,7 +369,7 @@ def basketball(information) :
 # View
 ## Photography
 
-def get_photography_data(id_user):
+def get_single_data(id_user):
     try :
         query = text(f'''
             SELECT 
@@ -377,24 +378,28 @@ def get_photography_data(id_user):
             jenjang_sekolah.jenjang as jenjang,
             sekolah.nama_sekolah as nama_sekolah,
             pendaftaran.no_telp as no_telp,
-            peserta_fotografi.nama as nama_peserta,
-            peserta_fotografi.alamat as alamat_peserta,
-            peserta_fotografi.pas_photo as pas_photo
+            single_member.nama as nama_peserta,
+            single_member.alamat as alamat_peserta,
+            single_member.pas_photo as pas_photo,
+            lomba.nama_lomba as nama_lomba
             FROM 
             pendaftaran, 
+            lomba,
             sekolah,
             jenjang_sekolah,
-            peserta_fotografi,
+            single_member,
             detail_registrasi_individu,
             detail_akun
             WHERE
             detail_akun.uuid = '{id_user}'
+            AND 
+            lomba.id_lomba = pendaftaran.id_lomba
             AND
             detail_akun.id_pendaftaran = pendaftaran.id_pendaftaran 
             AND
             detail_registrasi_individu.id_pendaftaran = pendaftaran.id_pendaftaran
             AND
-            detail_registrasi_individu.id_peserta = peserta_fotografi.id_peserta
+            detail_registrasi_individu.id_peserta = single_member.id_peserta
             AND
             pendaftaran.npsn = sekolah.npsn
             AND 
@@ -422,9 +427,10 @@ def get_photography_data(id_user):
                     result[0][5],
                     result[0][6],
                     result[0][7],
+                    result[0][8],
                 ]}
     
-def get_photography_data_all():
+def get_single_data_all():
     try :
         query = text(f'''
             SELECT 
@@ -433,16 +439,17 @@ def get_photography_data_all():
             jenjang_sekolah.jenjang as jenjang,
             sekolah.nama_sekolah as nama_sekolah,
             pendaftaran.no_telp as no_telp,
-            peserta_fotografi.nama as nama_peserta,
-            peserta_fotografi.alamat as alamat_peserta,
-            peserta_fotografi.pas_photo as pas_photo,
+            single_member.nama as nama_peserta,
+            single_member.alamat as alamat_peserta,
+            single_member.pas_photo as pas_photo,
             pendaftaran.surat_tugas as surat_tugas,
-            peserta_fotografi.kartu_pelajar as kartu_pelajar
+            single_member.kartu_pelajar as kartu_pelajar,
+            pendaftaran.id_lomba as id_lomba
             FROM 
             pendaftaran, 
             sekolah,
             jenjang_sekolah,
-            peserta_fotografi,
+            single_member,
             detail_registrasi_individu,
             detail_akun
             WHERE
@@ -450,7 +457,7 @@ def get_photography_data_all():
             AND
             detail_registrasi_individu.id_pendaftaran = pendaftaran.id_pendaftaran
             AND
-            detail_registrasi_individu.id_peserta = peserta_fotografi.id_peserta
+            detail_registrasi_individu.id_peserta = single_member.id_peserta
             AND
             pendaftaran.npsn = sekolah.npsn
             AND 
@@ -475,6 +482,7 @@ def get_photography_data_all():
             temp_dict['pas_photo'] = participant[7]
             temp_dict['surat_tugas'] = participant[8]
             temp_dict['kartu_pelajar'] = participant[9]
+            temp_dict['id_lomba'] = participant[10]
             wraper.append(temp_dict)
        
 
@@ -489,21 +497,21 @@ def get_photography_data_all():
                 }
     
 ## Basketball Count
-def get_basketball_count():
-    try:
-       data, count = supabase.table('pendaftaran').select('*', count='exact').eq('id_lomba', '150').execute()
+# def get_basketball_count():
+#     try:
+#        data, count = supabase.table('pendaftaran').select('*', count='exact').eq('id_lomba', '150').execute()
 
-    except Exception as Error:
-        return {'status': "error", 'details': ['error-get',Error]}
+#     except Exception as Error:
+#         return {'status': "error", 'details': ['error-get',Error]}
     
-    else :
-        return {'status': "success", 
-                'details': '-', 
-                'data' : count[1]
-                }
+#     else :
+#         return {'status': "success", 
+#                 'details': '-', 
+#                 'data' : count[1]
+#                 }
 
 
-def get_basketball_data(id_user):
+def get_team_data(id_user):
     try :
         query_general = text(f'''
             SELECT 
@@ -511,11 +519,11 @@ def get_basketball_data(id_user):
                 DATE(pendaftaran.date_created) as date,
                 jenjang_sekolah.jenjang as jenjang,
                 sekolah.nama_sekolah as nama_sekolah,
-                tim.nama_pelatih as pelatih,
-                tim.nama_official as official,
-                tim.kategori_tim as kategori_tim,
-                pendaftaran.no_telp as no_telp
+                tim.nama_pendamping as pendamping,
+                pendaftaran.no_telp as no_telp,
+                lomba.nama_lomba as nama_lomba
             FROM 
+                lomba,
                 pendaftaran, 
                 sekolah,
                 jenjang_sekolah,
@@ -524,6 +532,8 @@ def get_basketball_data(id_user):
                 detail_akun
             WHERE
                 detail_akun.uuid = '{id_user}'
+                AND
+                lomba.id_lomba = pendaftaran.id_lomba
                 AND
                 detail_akun.id_pendaftaran = pendaftaran.id_pendaftaran 
                 AND
@@ -536,13 +546,13 @@ def get_basketball_data(id_user):
 
         query_member = text(f'''
            SELECT 
-                peserta_basket.nama as nama, 
-                peserta_basket.no_punggung as no_punggung,
-                peserta_basket.alamat as alamat,
-                peserta_basket.pas_photo as pas_photo,
+                team_member.nama as nama, 
+                team_member.jenis_kelamin as jenis_kelamin,
+                team_member.alamat as alamat,
+                team_member.pas_photo as pas_photo,
                 tim.nama_tim as nama_tim
             FROM 
-                peserta_basket, tim, detail_registrasi_tim, pendaftaran, detail_akun
+                team_member, tim, detail_registrasi_tim, pendaftaran, detail_akun
             WHERE
                 detail_akun.uuid = '{id_user}'
                 AND
@@ -552,7 +562,7 @@ def get_basketball_data(id_user):
                 AND 
                 detail_registrasi_tim.id_tim = tim.id_tim
                 AND
-                peserta_basket.id_tim =  tim.id_tim
+                team_member.id_tim =  tim.id_tim
         ''')
 
         # Execute the query with parameters
@@ -567,9 +577,10 @@ def get_basketball_data(id_user):
         for member in result_member :
             temp_dict = {}
             temp_dict['nama_lengkap'] = member[0]
-            temp_dict['no_punggung'] = member[1]
+            temp_dict['jenis_kelamin'] = member[1]
             temp_dict['alamat'] = member[2]
             temp_dict['pas_photo'] = member[3]
+            temp_dict['nama_lomba'] = member[4]
             wraper.append(temp_dict)
 
     except Exception as Error:
@@ -584,15 +595,14 @@ def get_basketball_data(id_user):
                         'date' : result_general[0][1],
                         'jenjang_sekolah' : result_general[0][2],
                         'nama_sekolah' : result_general[0][3],
-                        'nama_pelatih' : result_general[0][4],
-                        'nama_official' : result_general[0][5],
-                        'kategori_tim' : result_general[0][6],
-                        'no_telp' : result_general[0][7]
+                        'nama_pendamping' : result_general[0][4],
+                        'no_telp' : result_general[0][5],
+                        'nama_lomba' : result_general[0][6]
                     },
                     'member' : wraper
                         }
                 }
-def get_basketball_data_all():
+def get_team_data_all():
     try :
         query_general = text(f'''
             SELECT 
@@ -601,9 +611,7 @@ def get_basketball_data_all():
                 jenjang_sekolah.jenjang as jenjang,
                 sekolah.nama_sekolah as nama_sekolah,
                 tim.nama_tim as nama_tim,
-                tim.nama_pelatih as pelatih,
-                tim.nama_official as official,
-                tim.kategori_tim as kategori_tim,
+                tim.nama_pendamping as pendamping,
                 pendaftaran.surat_tugas as surat_tugas,
                 pendaftaran.no_telp as no_telp
             FROM 
@@ -635,18 +643,18 @@ def get_basketball_data_all():
             
             query_member = text(f'''
                     SELECT 
-                        peserta_basket.nama as nama, 
-                        peserta_basket.no_punggung as no_punggung,
-                        peserta_basket.alamat as alamat,
-                        peserta_basket.pas_photo as pas_photo,
-                        peserta_basket.kartu_pelajar as kartu_pelajar
+                        team_member.nama as nama, 
+                        team_member.alamat as alamat,
+                        team_member.pas_photo as pas_photo,
+                        team_member.kartu_pelajar as kartu_pelajar,
+                        team_member.jenis_kelamin as jenis_kelamin
                     FROM 
-                        peserta_basket
+                        team_member
                         
                     INNER JOIN
                         detail_registrasi_tim
                     ON  
-                        detail_registrasi_tim.id_tim = peserta_basket.id_tim
+                        detail_registrasi_tim.id_tim = team_member.id_tim
                     AND detail_registrasi_tim.id_pendaftaran = '{general[0]}'
                 ''')
 
@@ -660,10 +668,10 @@ def get_basketball_data_all():
                 # print(member[0])
                 temp_dict = {
                     'nama_lengkap' : member[0],
-                    'no_punggung' : member[1],
-                    'alamat' : member[2],
-                    'pas_photo' : member[3],
-                    'kartu_pelajar' : member[4]
+                    'alamat' : member[1],
+                    'pas_photo' : member[2],
+                    'kartu_pelajar' : member[3],
+                    'jenis_kelamin' : member[4]
                 }
                 # print(temp_dict)
                 member_wraper.append(temp_dict)
@@ -674,11 +682,9 @@ def get_basketball_data_all():
                 'jenjang' : general[2],
                 'nama_sekolah' : general[3],
                 'nama_tim' : general[4],
-                'pelatih' : general[5],
-                'official' : general[6],
-                'kategori_tim' : general[7],
-                'surat_tugas' : general[8],
-                'no_telp' : general[9],
+                'pendamping' : general[5],
+                'surat_tugas' : general[6],
+                'no_telp' : general[7],
                 'member': member_wraper
                 }
 
@@ -745,7 +751,68 @@ def get_sekolah_data(id):
                 'details': '-', 
                 'data' : data
                 }
+# Lomba
+def add_lomba_data(id_lomba, nama_lomba, biaya_registrasi,  date_start, date_end, description, ilustrasi, kategori_lomba):
+    try : 
+        data = ilustrasi.file.read()
+        file_name = f"{id_lomba}-{nama_lomba}.jpg" 
+        supabase.storage.from_(f'registration-storage/ilustrasi_lomba').upload(file=data, path=file_name, file_options={"content-type" : "image/jpg"})
+        public_url = supabase.storage.from_(f'registration-storage/ilustrasi_lomba').get_public_url(file_name)            
+
+    except Exception as Error :
+        return {'status': "error", 'details': 'error-upload'}
+
+    try :
+        data, count = supabase.table("lomba").insert({"id_lomba": id_lomba, "nama_lomba": nama_lomba,'biaya_registrasi':biaya_registrasi , "start_date":date_start, "end_date":date_end, 'description':description,'ilustrasi' : public_url, 'kategori_lomba':kategori_lomba}).execute()
+
+    except Exception as Error:
+        error = Error.json()['details']
+        return {'status': "error", 'details': error}
+
+    else :
+        return {'status': "success", 
+                'details': 'berhasil menambahkan lomba', 
+                'data' : '-'
+                }
     
+def update_lomba_data(id_lomba, nama_lomba, biaya_registrasi, date_start, date_end, description, ilustrasi, kategori_lomba):
+    try :
+        temp_1 = {'nama_lomba':nama_lomba, 
+                 'biaya_registrasi':biaya_registrasi, 
+                 'start_date':date_start, 
+                 'end_date':date_end, 
+                 'description':description, 
+                 'ilustrasi':ilustrasi, 
+                 'kategori_lomba':kategori_lomba}
+        temp = {}
+        for key, item in temp_1.items():
+           if temp_1[key] != None:
+               temp[key] = item
+        data, count =  supabase.table('lomba').update(temp).eq("id_lomba", id_lomba).execute()
+    except Exception as Error:
+        print(temp)
+        print(Error)
+        return {'status': "error", 'details': Error}
+
+    else :
+        return {'status': "success", 
+                'details': '-', 
+                'data' : data[1]
+                }
+
+def delete_lomba(id):
+    try :
+        data, count = supabase.table('lomba').delete().eq('id_lomba', id).execute()
+        data, count = supabase.table('penanggung_jawab').delete().eq('id_lomba', id).execute()
+
+
+    except Exception as Error:
+        error = Error.json()['details']
+        return {'status': "error", 'details': error}
+    
+    else :
+        return {'status': "success", 'details': 'berhasil menghapus akun penanggung jawab'}
+
 def get_lomba_data(id):
     try :
         query = text(f'''
@@ -790,15 +857,47 @@ def get_lomba_all_data():
                 'data' : data[1]
                 }
     
-def update_lomba_data(id_lomba, start_date, end_date):
-    try :
-       data, count =  supabase.table('lomba').update({'start_date':start_date, 'end_date':end_date}).eq("id_lomba", id_lomba).execute()
-       
-    except Exception as Error:
-        return {'status': "error", 'details': Error}
 
+def get_count_lomba():
+    try :
+        query = text(f'''
+                    SELECT 
+                        count(pendaftaran.id_pendaftaran) as jumlah_pendaftar,
+                        lomba.nama_lomba as nama_lomba,
+                        lomba.kategori_lomba as kategori_lomba,
+                        lomba.id_lomba as id
+                    FROM 
+                        pendaftaran, 
+                        lomba
+                    WHERE 
+                        lomba.id_lomba = pendaftaran.id_lomba
+                    GROUP BY 
+                        nama_lomba,
+                        kategori_lomba,
+                        id
+                ''')
+
+        # Execute the query with parameters
+        with engine.connect() as conn:
+            result = conn.execute(query)
+        result = result.fetchall()
+
+        wraper = []
+        for participant in result :
+            temp_dict = {}
+            temp_dict['jumlah_pendaftar'] = participant[0]
+            temp_dict['nama_lomba'] = participant[1]
+            temp_dict['kategori_lomba'] = participant[2]
+            temp_dict['id_lomba'] = participant[3]
+            wraper.append(temp_dict)
+       
+
+    except Exception as Error:
+        return {'status': "error", 'details': ['error-get',Error]}
+    
     else :
         return {'status': "success", 
                 'details': '-', 
-                'data' : data[1]
+                'data' : 
+                    wraper
                 }

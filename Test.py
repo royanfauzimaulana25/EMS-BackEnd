@@ -128,134 +128,20 @@ supabase: Client = create_client(url, key)
 URL = "postgresql://postgres.mbqjqbrviyhkgsgkvevx:#Ems.25qweerty#@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres"
 engine = create_engine(URL, connect_args={"connect_timeout": "0"})
 
-# query_general = text(f'''
-#             SELECT 
-#                 lomba.nama_lomba as nama_lomba,
-#                 lomba.biaya_registrasi as biaya
-#             FROM
-#                 detail_akun, pendaftaran, lomba
-#             WHERE
-#                 detail_akun.uuid = 'b5010442-8d98-41da-97dd-a7a9976d5f0e' 
-#                 AND
-#                 detail_akun.id_pendaftaran = pendaftaran.id_pendaftaran
-#                 AND
-#                 pendaftaran.id_lomba = lomba.id_lomba
-#         ''')
-#         # Execute the query with parameters
-# with engine.connect() as conn:
-#     result = conn.execute(query_general)
+# data, count = supabase.table('pendaftaran').select('*', count='exact').eq('id_lomba', '150').execute()
+id_lomba = '23'
+nama_lomba = 'asdad'
+biaya_registrasi = 20000
+date_start = '21/21/2222'
+date_end = '21/21/2223'
+description = 'Lorem Ipsum Dolor Ipsum '
+ilustrasi = None
+kategori_lomba = 'team'
 
-# result = result.fetchall()
+temp_1 = {'id_lomba' : id_lomba, 'nama_lomba':nama_lomba, 'biaya_registrasi':biaya_registrasi, 'start_date':date_start, 'end_date':date_end, 'description':description, 'ilustrasi':ilustrasi, 'kategori_lomba':kategori_lomba}
+temp = {}
+for key, item in temp_1.items():
+    if temp_1[key] != None:
+        temp[key] = item
 
-# print(result)
-
-# a = 'surat_tugas'
-# b = 'pas_photo_1'
-# c = 'kartu_pelajar'
-
-# print(len(a))
-# print(len(b))
-# print(len(c))
-
-# print('surat_tugas' == a[0:11])
-# print('pas_photo' == b[0:9])
-# print('kartu_pelajar' == c[0:13])
-
-# data, count = supabase.table('lomba').select('*').execute()
-# # print(count[1])
-# wraper = []
-# for item in data[1]:
-#     wraper.append(item)
-# print(type(data[1]))
-
-
-query_general = text(f'''
-    SELECT 
-        pendaftaran.id_pendaftaran as id_pendaftaran, 
-        DATE(pendaftaran.date_created) as date,
-        jenjang_sekolah.jenjang as jenjang,
-        sekolah.nama_sekolah as nama_sekolah,
-        tim.nama_tim as nama_tim,
-        tim.nama_pelatih as pelatih,
-        tim.nama_official as official,
-        tim.kategori_tim as kategori_tim,
-        pendaftaran.no_telp as no_telp
-    FROM 
-        pendaftaran, 
-        sekolah,
-        jenjang_sekolah,
-        tim,
-        detail_registrasi_tim
-    WHERE
-        pendaftaran.id_lomba = '150'
-        AND
-        detail_registrasi_tim.id_pendaftaran = pendaftaran.id_pendaftaran
-        AND
-        pendaftaran.npsn = sekolah.npsn
-        AND 
-        sekolah.id_jenjang = jenjang_sekolah.id_jenjang
-        AND 
-        tim.id_tim = detail_registrasi_tim.id_tim
-            
-''')
-
-# Execute the query with parameters
-with engine.connect() as conn:
-    result_general = conn.execute(query_general)
-
-result_general = result_general.fetchall()
-
-data = []
-for general in result_general:
-    
-    query_member = text(f'''
-            SELECT 
-                peserta_basket.nama as nama, 
-                peserta_basket.no_punggung as no_punggung,
-                peserta_basket.alamat as alamat,
-                peserta_basket.pas_photo as pas_photo,
-                peserta_basket.kartu_pelajar as kartu_pelajar
-            FROM 
-                peserta_basket
-                
-            INNER JOIN
-                detail_registrasi_tim
-            ON  
-                detail_registrasi_tim.id_tim = peserta_basket.id_tim
-            AND detail_registrasi_tim.id_pendaftaran = '{general[0]}'
-        ''')
-
-    with engine.connect() as conn:
-        result_member = conn.execute(query_member)
-
-    result_member = result_member.fetchall()
-    
-    member_wraper = []
-    for member in result_member :
-        # print(member[0])
-        temp_dict = {
-            'nama_lengkap' : member[0],
-            'no_punggung' : member[1],
-            'alamat' : member[2],
-            'pas_photo' : member[3],
-            'kartu_pelajar' : member[4]
-        }
-        # print(temp_dict)
-        member_wraper.append(temp_dict)
-
-    general = {
-        'id_pendaftaran' : general[0],
-        'date' : general[1],
-        'jenjang' : general[2],
-        'nama_sekolah' : general[3],
-        'nama_tim' : general[4],
-        'pelatih' : general[5],
-        'official' : general[6],
-        'kategori_tim' : general[7],
-        'no_telp' : general[8],
-        'member': member_wraper
-        }
-
-    data.append(general)
-
-print(data)
+print(temp)

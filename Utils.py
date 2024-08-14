@@ -818,7 +818,8 @@ def get_lomba_data(id):
         query = text(f'''
             SELECT 
                 lomba.nama_lomba as nama_lomba,
-                lomba.biaya_registrasi as biaya
+                lomba.biaya_registrasi as biaya, 
+                lomba.kategori_lomba as kategori_lomba
             FROM
                 detail_akun, pendaftaran, lomba
             WHERE
@@ -840,7 +841,7 @@ def get_lomba_data(id):
     else :
         return {'status': "success", 
                 'details': '-', 
-                'data' : {'nama' : result[0][0], 'price':result[0][1]}
+                'data' : {'nama' : result[0][0], 'price':result[0][1], 'kategori_lomba':result[0][2]}
                 }
 
 

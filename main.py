@@ -103,6 +103,7 @@ async def add_single(
     nama_lengkap : Annotated[str, Form()],
     jenis_kelamin : Annotated[str, Form()],
     alamat : Annotated[str, Form()],
+    prestasi : Annotated[str, Form()],
     pas_photo : Annotated[UploadFile, File()],
     kartu_pelajar : Annotated[UploadFile, File()]
     ) :
@@ -112,6 +113,7 @@ async def add_single(
         "nama" : nama_lengkap,
         "jenis_kelamin" : jenis_kelamin,
         "alamat" : alamat,
+        "prestasi" : prestasi,
         "pas_photo" : pas_photo,
         "kartu_pelajar" : kartu_pelajar,
         "id_lomba" : lomba,
@@ -126,7 +128,7 @@ async def add_single(
 
 # Get Data
 @app.get("/single/")
-async def get_photography(id_user) :
+async def get_single(id_user) :
     
     response = utils.get_single_data(id_user)
 
@@ -154,24 +156,28 @@ async def add_team(
     nama_lengkap : Annotated[str, Form()],
     jenis_kelamin : Annotated[str, Form()],
     alamat : Annotated[str, Form()],
+    prestasi : Annotated[str, Form()],
     pas_photo : Annotated[UploadFile, File()],
     kartu_pelajar : Annotated[UploadFile, File()],
 
     nama_lengkap_1 : Annotated[str, Form()],
     jenis_kelamin_1 : Annotated[str, Form()],
     alamat_1 : Annotated[str, Form()],
+    prestasi_1 : Annotated[str, Form()],
     pas_photo_1 : Annotated[UploadFile, File()],
     kartu_pelajar_1 : Annotated[UploadFile, File()],
 
     nama_lengkap_2 : Annotated[str, Form()],
     jenis_kelamin_2 : Annotated[str, Form()],
     alamat_2 : Annotated[str, Form()],
+    prestasi_2 : Annotated[str, Form()],
     pas_photo_2 : Annotated[UploadFile, File()],
     kartu_pelajar_2 : Annotated[UploadFile, File()],
 
     nama_lengkap_3 : Annotated[str, Form()],
     jenis_kelamin_3 : Annotated[str, Form()],
     alamat_3 : Annotated[str, Form()],
+    prestasi_3 : Annotated[str, Form()],
     pas_photo_3 : Annotated[UploadFile, File()],
     kartu_pelajar_3 : Annotated[UploadFile, File()]
     ) :
@@ -188,24 +194,28 @@ async def add_team(
         "nama" : nama_lengkap,
         "jenis_kelamin" : jenis_kelamin,
         "alamat" : alamat,
+        "prestasi" : prestasi,
         "pas_photo" : pas_photo,
         "kartu_pelajar" : kartu_pelajar,
 
         "nama_1" : nama_lengkap_1,
         "jenis_kelamin_1" : jenis_kelamin_1,
         "alamat_1" : alamat_1,
+        "prestasi_1" : prestasi_1,
         "pas_photo_1" : pas_photo_1,
         "kartu_pelajar_1" : kartu_pelajar_1,
 
         "nama_2" : nama_lengkap_2,
         "jenis_kelamin_2" : jenis_kelamin_2,
         "alamat_2" : alamat_2,
+        "prestasi_2" : prestasi_2,
         "pas_photo_2" : pas_photo_2,
         "kartu_pelajar_2" : kartu_pelajar_2,
 
         "nama_3" : nama_lengkap_3,
         "jenis_kelamin_3" : jenis_kelamin_3,
         "alamat_3" : alamat_3,
+        "prestasi_3" : prestasi_3,
         "pas_photo_3" : pas_photo_3,
         "kartu_pelajar_3" : kartu_pelajar_3,
             }
@@ -234,7 +244,7 @@ async def pay(info : Info = Body(...)) :
 
 # Get Data
 @app.get("/team/")
-async def get_tean(id_user) :
+async def get_team(id_user) :
     
     response = utils.get_team_data(id_user)
 
@@ -262,9 +272,6 @@ async def get_team() :
 #     response = utils.get_photography_count()
 
 #     return response
-
-# 
-
 
 # Metadata
 @app.get("/jenjang/")

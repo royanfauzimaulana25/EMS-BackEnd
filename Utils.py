@@ -8,12 +8,15 @@ import os
 
 # Connect Supabse via SQLAlchemy
 URL = os.environ.get('sql_alchemy_supabase_url')
+# URL = "postgresql://postgres.mbqjqbrviyhkgsgkvevx:#Ems.25qweerty#@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres"
 
 engine = create_engine(URL, connect_args={"connect_timeout": "0"})
 
 # Connect Supabase via API
 url : str = os.environ.get('supabase_api_url')
 key : str = os.environ.get('supabase_api_key')
+# url : str = "https://mbqjqbrviyhkgsgkvevx.supabase.co"
+# key : str = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1icWpxYnJ2aXloa2dzZ2t2ZXZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTg0MjY0MzMsImV4cCI6MjAzNDAwMjQzM30._CAllqdbgfzcQ2N8aUmWVRRXPQZl7z_zkNLpu51wWEc"
 
 supabase: Client = create_client(url, key)
 
@@ -223,6 +226,7 @@ def single(information) :
              "nama": information["nama"], 
              "jenis_kelamin": information["jenis_kelamin"], 
              "alamat": information["alamat"],
+             "prestasi": information["prestasi"],
              "pas_photo": url_data["pas_photo"],
              "kartu_pelajar": url_data["kartu_pelajar"]
              }
@@ -320,6 +324,7 @@ def team(information) :
              "nama": information["nama"], 
              "jenis_kelamin": information["jenis_kelamin"], 
              "alamat": information["alamat"],
+             "prestasi": information["prestasi"],
              "pas_photo": url_data["pas_photo"],
              "kartu_pelajar": url_data["kartu_pelajar"]
              }
@@ -331,6 +336,7 @@ def team(information) :
              "nama": information["nama_1"], 
              "jenis_kelamin": information["jenis_kelamin_1"], 
              "alamat": information["alamat_1"],
+             "prestasi": information["prestasi_1"],
              "pas_photo": url_data["pas_photo_1"],
              "kartu_pelajar": url_data["kartu_pelajar_1"]
              }
@@ -342,6 +348,7 @@ def team(information) :
              "nama": information["nama_2"], 
              "jenis_kelamin": information["jenis_kelamin_2"], 
              "alamat": information["alamat_2"],
+             "prestasi": information["prestasi_2"],
              "pas_photo": url_data["pas_photo_2"],
              "kartu_pelajar": url_data["kartu_pelajar_2"]
              }
@@ -353,6 +360,7 @@ def team(information) :
              "nama": information["nama_3"], 
              "jenis_kelamin": information["jenis_kelamin_3"], 
              "alamat": information["alamat_3"],
+             "prestasi": information["prestasi_3"],
              "pas_photo": url_data["pas_photo_3"],
              "kartu_pelajar": url_data["kartu_pelajar_3"]
              }
@@ -380,6 +388,7 @@ def get_single_data(id_user):
             pendaftaran.no_telp as no_telp,
             single_member.nama as nama_peserta,
             single_member.alamat as alamat_peserta,
+            single_member.prestasi as prestasi_peserta,
             single_member.pas_photo as pas_photo,
             lomba.nama_lomba as nama_lomba
             FROM 
@@ -428,6 +437,7 @@ def get_single_data(id_user):
                     result[0][6],
                     result[0][7],
                     result[0][8],
+                    result[0][9],
                 ]}
     
 def get_single_data_all():
@@ -441,6 +451,7 @@ def get_single_data_all():
             pendaftaran.no_telp as no_telp,
             single_member.nama as nama_peserta,
             single_member.alamat as alamat_peserta,
+            single_member.prestasi as prestasi_peserta,
             single_member.pas_photo as pas_photo,
             pendaftaran.surat_tugas as surat_tugas,
             single_member.kartu_pelajar as kartu_pelajar,
@@ -479,10 +490,11 @@ def get_single_data_all():
             temp_dict['no_telp'] = participant[4]
             temp_dict['nama_peserta'] = participant[5]
             temp_dict['alamat_peserta'] = participant[6]
-            temp_dict['pas_photo'] = participant[7]
-            temp_dict['surat_tugas'] = participant[8]
-            temp_dict['kartu_pelajar'] = participant[9]
-            temp_dict['id_lomba'] = participant[10]
+            temp_dict['prestasi_peserta'] = participant[7]
+            temp_dict['pas_photo'] = participant[8]
+            temp_dict['surat_tugas'] = participant[9]
+            temp_dict['kartu_pelajar'] = participant[10]
+            temp_dict['id_lomba'] = participant[11]
             wraper.append(temp_dict)
        
 
@@ -549,6 +561,7 @@ def get_team_data(id_user):
                 team_member.nama as nama, 
                 team_member.jenis_kelamin as jenis_kelamin,
                 team_member.alamat as alamat,
+                team_member.prestasi as prestasi,
                 team_member.pas_photo as pas_photo,
                 tim.nama_tim as nama_tim
             FROM 
@@ -579,8 +592,9 @@ def get_team_data(id_user):
             temp_dict['nama_lengkap'] = member[0]
             temp_dict['jenis_kelamin'] = member[1]
             temp_dict['alamat'] = member[2]
-            temp_dict['pas_photo'] = member[3]
-            temp_dict['nama_lomba'] = member[4]
+            temp_dict['pas_photo'] = member[4]
+            temp_dict['nama_lomba'] = member[5]
+            temp_dict['prestasi'] = member[3]
             wraper.append(temp_dict)
 
     except Exception as Error:
@@ -645,6 +659,7 @@ def get_team_data_all():
                     SELECT 
                         team_member.nama as nama, 
                         team_member.alamat as alamat,
+                        team_member.prestasi as prestasi,
                         team_member.pas_photo as pas_photo,
                         team_member.kartu_pelajar as kartu_pelajar,
                         team_member.jenis_kelamin as jenis_kelamin
@@ -669,9 +684,10 @@ def get_team_data_all():
                 temp_dict = {
                     'nama_lengkap' : member[0],
                     'alamat' : member[1],
-                    'pas_photo' : member[2],
-                    'kartu_pelajar' : member[3],
-                    'jenis_kelamin' : member[4]
+                    'prestasi' : member[2],
+                    'pas_photo' : member[3],
+                    'kartu_pelajar' : member[4],
+                    'jenis_kelamin' : member[5]
                 }
                 # print(temp_dict)
                 member_wraper.append(temp_dict)

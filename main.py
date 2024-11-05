@@ -16,6 +16,12 @@ app.add_middleware(
 )
 
 # Auth
+@app.get("/register/status")
+async def registerStatus(iduser) :
+    
+    response = utils.register_status(iduser)    
+
+    return response
 
 @app.post("/register")
 async def registration(
@@ -288,6 +294,13 @@ async def get_sekolah(id) :
 
     return response
 
+@app.get("/lomba/link")
+async def get_lomba_link(id) :
+    
+    response = utils.get_lomba_link(id)
+
+    return response
+
 @app.post("/lomba/")
 async def add_lomba(
     id_lomba : Annotated[str, Form()],
@@ -320,12 +333,13 @@ async def update_lomba(
     date_end : str = Form(),
     description : str = Form(),
     ilustrasi : UploadFile = None,
+    scoring_link : str = Form(),
     kategori_lomba : str = Form()
     ) :
     if ilustrasi.size == 0:
         ilustrasi = None
 
-    response = utils.update_lomba_data(id_lomba, nama_lomba, biaya_registrasi, date_start, date_end, description, ilustrasi, kategori_lomba)
+    response = utils.update_lomba_data(id_lomba, nama_lomba, biaya_registrasi, date_start, date_end, description, ilustrasi, kategori_lomba, scoring_link)
 
     return response
 

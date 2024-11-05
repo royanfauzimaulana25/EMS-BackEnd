@@ -24,6 +24,41 @@ def generate_uuid():
     return str(uuid.uuid4())
 
 # Auth
+def register_status(iduser):
+    try :
+        data, count = supabase.table('detail_akun').select('*').eq('uuid',iduser).execute()
+
+    except Exception as Error:
+        error = Error.json()['details']
+        return {'status': "error", 'details': error}
+    
+    else :
+        if data[1] != [] :
+            id_pendaftaran = data[1][0]['id_pendaftaran']
+            query = text(f'''
+                           SELECT 
+                                    pendaftaran.id_pendaftaran as id_pendaftaran,
+                                    pendaftaran.id_lomba as id_lomba,
+                                    lomba.kategori_lomba as kategori_lomba
+                            FROM 
+                                    pendaftaran, lomba
+                            WHERE
+                                    pendaftaran.id_lomba = lomba.id_lomba
+                                    AND
+                                    pendaftaran.id_pendaftaran = '{id_pendaftaran}'
+                            ''')
+
+            # Execute the query with parameters
+            with engine.connect() as conn:
+                result = conn.execute(query)
+
+            result = result.fetchall()
+            # print(result[0][2])
+            return {'status': "success", 'details': 'Registered', 'data': f'{result[0][2]}'}
+        else :
+            return {'status': "success", 'details': 'Not Registered', 'data': '-'}
+
+
 def add_account(username, password, role):
     try :
         data, count = supabase.table('akun').insert({"username": username, "password": password, "role": role, "date_created": str(datetime.now()), "uuid": generate_uuid()}).execute()
@@ -95,6 +130,9 @@ def login_verification(username , password):
         return {'status': "error", 'details': error}
     
     else :
+        if data[1] == []:
+            return {'status': "error", 'details': 'Akun Tidak Ditemukan'}
+        
         user = data[1][0]['username']
         pw = data[1][0]['password']
         id_user = data[1][0]['uuid']
@@ -390,7 +428,8 @@ def get_single_data(id_user):
             single_member.alamat as alamat_peserta,
             single_member.prestasi as prestasi_peserta,
             single_member.pas_photo as pas_photo,
-            lomba.nama_lomba as nama_lomba
+            lomba.nama_lomba as nama_lomba,
+            lomba.scoring_link as scoring_link
             FROM 
             pendaftaran, 
             lomba,
@@ -438,6 +477,7 @@ def get_single_data(id_user):
                     result[0][7],
                     result[0][8],
                     result[0][9],
+                    result[0][10],
                 ]}
     
 def get_single_data_all():
@@ -533,7 +573,8 @@ def get_team_data(id_user):
                 sekolah.nama_sekolah as nama_sekolah,
                 tim.nama_pendamping as pendamping,
                 pendaftaran.no_telp as no_telp,
-                lomba.nama_lomba as nama_lomba
+                lomba.nama_lomba as nama_lomba,
+                lomba.scoring_link as scoring_link
             FROM 
                 lomba,
                 pendaftaran, 
@@ -611,7 +652,8 @@ def get_team_data(id_user):
                         'nama_sekolah' : result_general[0][3],
                         'nama_pendamping' : result_general[0][4],
                         'no_telp' : result_general[0][5],
-                        'nama_lomba' : result_general[0][6]
+                        'nama_lomba' : result_general[0][6],
+                        'scoring_link' : result_general[0][7]
                     },
                     'member' : wraper
                         }
@@ -791,7 +833,7 @@ def add_lomba_data(id_lomba, nama_lomba, biaya_registrasi,  date_start, date_end
                 'data' : '-'
                 }
     
-def update_lomba_data(id_lomba, nama_lomba, biaya_registrasi, date_start, date_end, description, ilustrasi, kategori_lomba):
+def update_lomba_data(id_lomba, nama_lomba, biaya_registrasi, date_start, date_end, description, ilustrasi, kategori_lomba, scoring_link):
     try :
         temp_1 = {'nama_lomba':nama_lomba, 
                  'biaya_registrasi':biaya_registrasi, 
@@ -799,7 +841,8 @@ def update_lomba_data(id_lomba, nama_lomba, biaya_registrasi, date_start, date_e
                  'end_date':date_end, 
                  'description':description, 
                  'ilustrasi':ilustrasi, 
-                 'kategori_lomba':kategori_lomba}
+                 'kategori_lomba':kategori_lomba,
+                 'scoring_link':scoring_link}
         temp = {}
         for key, item in temp_1.items():
            if temp_1[key] != None:
@@ -918,3 +961,14 @@ def get_count_lomba():
                 'data' : 
                     wraper
                 }
+
+def get_lomba_link(idlomba):
+    try :
+        data, count = supabase.table('lomba').select("scoring_link").eq('id_lomba', idlomba).execute()
+    
+    except Exception as Error:
+        error = Error.json()['details']
+        return {'status': "error", 'details': error}
+    
+    else :
+        return {'status': "success", 'details': '-', 'data' : data[1]}

@@ -333,8 +333,8 @@ async def update_lomba(
     date_end : str = Form(),
     description : str = Form(),
     ilustrasi : UploadFile = None,
-    scoring_link : str = Form(),
-    kategori_lomba : str = Form()
+    kategori_lomba : str = Form(),
+    scoring_link : str = Form()
     ) :
     if ilustrasi.size == 0:
         ilustrasi = None

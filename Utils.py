@@ -124,6 +124,7 @@ def login_verification(username , password):
 
     except Exception as Error:
         error = Error.json()['details']
+        print(error)
         return {'status': "error", 'details': error}
     
     else :
